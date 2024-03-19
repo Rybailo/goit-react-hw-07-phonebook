@@ -9,7 +9,7 @@ import { useDispatch } from 'react-redux';
 export const ContactList = () => {
   const contacts = useSelector(getContacts);
   const filter = useSelector(getFilter);
-  const error = useSelector(getError);
+  /*   const error = useSelector(getError); */
   const dispatch = useDispatch();
 
   useEffect(() => {
