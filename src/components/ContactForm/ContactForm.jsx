@@ -38,6 +38,7 @@ export const ContactForm = () => {
   const dispatch = useDispatch();
 
   const handleSubmit = (values, actions) => {
+    actions.resetForm();
     const { name, number } = values;
     const isExist = contacts.some(
       contact =>

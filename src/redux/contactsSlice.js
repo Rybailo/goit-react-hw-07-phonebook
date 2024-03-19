@@ -1,13 +1,32 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { nanoid } from 'nanoid';
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
+import { requestContacts } from 'services/api';
+import { STATUSES } from 'utils/constants';
 
-const contactsInitialState = [];
+export const apiGetContacts = createAsyncThunk(
+  'contacts/apiGetContacts',
+  async (_, thunkApi) => {
+    try {
+      const contacts = await requestContacts();
+      console.log('requestContacts', requestContacts);
+      return contacts;
+    } catch (error) {
+      return thunkApi.rejectWithValue(error.message);
+    }
+  }
+);
+
+const initialState = {
+  contacts: [],
+  isLoading: false,
+  error: null,
+};
 
 const contactsSlice = createSlice({
   name: 'contacts',
-  initialState: { contacts: contactsInitialState },
+  initialState,
   reducers: {
     addContact: {
       reducer(state, action) {
@@ -31,6 +50,20 @@ const contactsSlice = createSlice({
       },
     },
   },
+  extraReducers: builder =>
+    builder
+      .addCase(apiGetContacts.pending, (state, action) => {
+        state.status = STATUSES.pending;
+        state.error = null;
+      })
+      .addCase(apiGetContacts.fulfilled, (state, action) => {
+        state.status = STATUSES.success;
+        state.contacts = action.payload;
+      })
+      .addCase(apiGetContacts.rejected, (state, action) => {
+        state.status = STATUSES.error;
+        state.error = action.payload;
+      }),
 });
 
 const persistConfig = {

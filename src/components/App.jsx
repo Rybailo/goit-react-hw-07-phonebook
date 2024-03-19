@@ -1,6 +1,6 @@
 import { Toaster } from 'react-hot-toast';
 import { ContactForm } from '../components/ContactForm/ContactForm';
-import { ContactList } from '../components/ClontactList/ClontactList';
+import { ContactList } from './ContactList/ContactList';
 import { Filter } from '../components/Filter/Filter';
 import { Layout } from '../components/Layout';
 import { store } from '../redux/store';
