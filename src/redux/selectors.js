@@ -8,7 +8,6 @@ export const selectIsLoading = state => state.contacts.isLoading;
 export const selectVisibleContacts = createSelector(
   [getContacts, getFilter],
   (contacts, filter) => {
-    console.log('first');
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(filter.toLowerCase())
     );

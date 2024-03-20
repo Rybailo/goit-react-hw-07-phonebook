@@ -1,21 +1,7 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { nanoid } from 'nanoid';
-import { persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
-import { requestContacts } from 'services/api';
+import { createSlice } from '@reduxjs/toolkit';
+import { deleteContact, fetchContacts } from '../services/api';
+import { addContact } from '../services/api';
 import { STATUSES } from 'utils/constants';
-
-export const apiGetContacts = createAsyncThunk(
-  'contacts/apiGetContacts',
-  async (_, thunkApi) => {
-    try {
-      const contacts = await requestContacts();
-      return contacts;
-    } catch (error) {
-      return thunkApi.rejectWithValue(error.message);
-    }
-  }
-);
 
 const initialState = {
   contacts: [],
@@ -26,56 +12,51 @@ const initialState = {
 const contactsSlice = createSlice({
   name: 'contacts',
   initialState,
-  reducers: {
-    addContact: {
-      reducer(state, action) {
-        state.contacts.push(action.payload);
-      },
-      prepare(name, number) {
-        return {
-          payload: {
-            name,
-            number,
-            id: nanoid(),
-          },
-        };
-      },
-    },
-    deleteContact: {
-      reducer(state, action) {
-        state.contacts = state.contacts.filter(
-          element => element.id !== action.payload
-        );
-      },
-    },
-  },
+
   extraReducers: builder =>
     builder
-      .addCase(apiGetContacts.pending, (state, action) => {
+      .addCase(fetchContacts.pending, state => {
         state.status = STATUSES.pending;
         state.error = null;
         state.isLoading = true;
       })
-      .addCase(apiGetContacts.fulfilled, (state, action) => {
+      .addCase(fetchContacts.fulfilled, (state, action) => {
         state.status = STATUSES.success;
         state.contacts = action.payload;
         state.isLoading = false;
       })
-      .addCase(apiGetContacts.rejected, (state, action) => {
+      .addCase(fetchContacts.rejected, (state, action) => {
         state.status = STATUSES.error;
         state.error = action.payload;
         state.isLoading = false;
+      })
+      .addCase(addContact.pending, state => {
+        state.isLoading = true;
+      })
+      .addCase(addContact.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        state.contacts.push(action.payload);
+      })
+      .addCase(addContact.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteContact.pending, state => {
+        state.isLoading = true;
+      })
+      .addCase(deleteContact.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        const index = state.contacts.findIndex(
+          contact => contact.id === action.payload.id
+        );
+        state.contacts.splice(index, 1);
+      })
+      .addCase(deleteContact.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
       }),
 });
 
-const persistConfig = {
-  key: 'contacts',
-  storage,
-};
-
-export const persistedReducer = persistReducer(
-  persistConfig,
-  contactsSlice.reducer
-);
-
-export const { addContact, deleteContact } = contactsSlice.actions;
+export const contactsReducer = contactsSlice.reducer;

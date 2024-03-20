@@ -9,8 +9,9 @@ import {
 } from './ContactForm.styled';
 import { useDispatch, useSelector } from 'react-redux';
 import { getContacts } from '../../redux/selectors';
-import { addContact } from '../../redux/contactsSlice';
+
 import { toast } from 'react-hot-toast';
+import { addContact } from 'services/api';
 
 const ContactSchema = Yup.object().shape({
   name: Yup.string()
@@ -52,7 +53,7 @@ export const ContactForm = () => {
       return;
     }
 
-    dispatch(addContact(name, number));
+    dispatch(addContact({ name, number }));
   };
   return (
     <Formik
